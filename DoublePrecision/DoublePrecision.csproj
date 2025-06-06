@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<RootNamespace>ExampleMod</RootNamespace>
-		<AssemblyName>ExampleMod</AssemblyName>
+		<RootNamespace>DoublePrecision</RootNamespace>
+		<AssemblyName>DoublePrecision</AssemblyName>
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 		<TargetFramework>net472</TargetFramework>
 		<FileAlignment>512</FileAlignment>
@@ -31,6 +31,14 @@
 		</Reference>
 		<Reference Include="FrooxEngine">
 			<HintPath>$(ResonitePath)Resonite_Data\Managed\FrooxEngine.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="CoreModule">
+			<HintPath>$(ResonitePath)Resonite_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="UnityFrooxEngineRunner">
+			<HintPath>$(ResonitePath)Resonite_Data\Managed\UnityFrooxEngineRunner.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
 	</ItemGroup>
