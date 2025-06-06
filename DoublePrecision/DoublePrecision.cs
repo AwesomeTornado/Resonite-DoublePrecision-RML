@@ -19,6 +19,7 @@ public class ExampleMod : ResoniteMod {
 	public override void OnEngineInit() {
 		Harmony harmony = new Harmony("com.example.DoublePrecision");
 		harmony.PatchAll();
+		Msg("DoublePrecision loaded.");
 	}
 
 	public class DataShare {
