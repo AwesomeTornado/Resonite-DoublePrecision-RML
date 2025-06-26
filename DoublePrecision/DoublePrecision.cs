@@ -103,7 +103,6 @@ public class DoublePrecision : ResoniteMod {
 
 		[HarmonyPatch(typeof(PBS_TriplanarMetallic), "GetShader")]
 		private static bool Prefix(PBS_TriplanarMetallic __instance, ref FrooxEngine.Shader __result) {
-			return true;
 			Uri URL;
 			if (__instance.Transparent) {
 				URL = new Uri(Shaders.resdb_choco_transparent);
@@ -131,7 +130,6 @@ public class DoublePrecision : ResoniteMod {
 
 		[HarmonyPatch(typeof(PBS_TriplanarSpecular), "GetShader")]
 		private static bool Prefix(PBS_TriplanarSpecular __instance, ref FrooxEngine.Shader __result) {
-			return true;
 			Uri URL;
 			if (__instance.Transparent) {
 				URL = new Uri(Shaders.resdb_choco_transparent_specular);
