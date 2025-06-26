@@ -41,6 +41,14 @@
 			<HintPath>$(ResonitePath)Resonite_Data\Managed\Elements.Core.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
+		<Reference Include="Elements.Assets">
+			<HintPath>$(ResonitePath)Resonite_Data\Managed\Elements.Assets.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="Assembly-CSharp">
+			<HintPath>$(ResonitePath)Resonite_Data\Managed\Assembly-CSharp.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
 		<Reference Include="UnityFrooxEngineRunner">
 			<HintPath>$(ResonitePath)Resonite_Data\Managed\UnityFrooxEngineRunner.dll</HintPath>
 			<Private>False</Private>
