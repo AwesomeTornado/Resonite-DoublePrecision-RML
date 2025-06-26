@@ -102,23 +102,26 @@ public class DoublePrecision : ResoniteMod {
 	internal class PBS_Tri_Metal_Overhaul{
 
 		[HarmonyPatch(typeof(PBS_TriplanarMetallic), "GetShader")]
-		private static void Postfix(PBS_TriplanarMetallic __instance, ref FrooxEngine.Shader __result) {
+		private static bool Prefix(PBS_TriplanarMetallic __instance, ref FrooxEngine.Shader __result) {
 			Uri URL;
 			if (__instance.Transparent) {
 				URL = new Uri(Shaders.resdb_choco_transparent);
 				Traverse instance_transparent = Traverse.Create(__instance).Field("_transparent");
+				//__result = Traverse.Create(__instance).Method("EnsureSharedShader", new object[] { instance_regular, URL }).GetValue<IAssetProvider<FrooxEngine.Shader>>().Asset;//todo before release
 				((StaticShader)instance_transparent.GetValue<AssetRef<FrooxEngine.Shader>>().Target).URL.DriveFrom(((StaticShader)instance_transparent.GetValue<AssetRef<FrooxEngine.Shader>>().Target).URL, true);
 				if (((StaticShader)instance_transparent.GetValue<AssetRef<FrooxEngine.Shader>>().Target).URL != URL) {
 					((StaticShader)instance_transparent.GetValue<AssetRef<FrooxEngine.Shader>>().Target).URL.ForceSet(URL);
 				}
-				return;
+				return false;
 			}
 			URL = new Uri(Shaders.resdb_choco);
 			Traverse instance_regular = Traverse.Create(__instance).Field("_regular");
+			__result = Traverse.Create(__instance).Method("EnsureSharedShader", new object[] { instance_regular, URL }).GetValue<IAssetProvider<FrooxEngine.Shader>>().Asset;//todo before release
 			((StaticShader)instance_regular.GetValue<AssetRef<FrooxEngine.Shader>>().Target).URL.DriveFrom(((StaticShader)instance_regular.GetValue<AssetRef<FrooxEngine.Shader>>().Target).URL, true);
 			if (((StaticShader)instance_regular.GetValue<AssetRef<FrooxEngine.Shader>>().Target).URL != URL) {
 				((StaticShader)instance_regular.GetValue<AssetRef<FrooxEngine.Shader>>().Target).URL.ForceSet(URL);
 			}
+			return false;
 		}
 	}
 
@@ -126,23 +129,26 @@ public class DoublePrecision : ResoniteMod {
 	internal class PBS_Tri_Specular_Overhaul {
 
 		[HarmonyPatch(typeof(PBS_TriplanarSpecular), "GetShader")]
-		private static void Postfix(PBS_TriplanarSpecular __instance, ref FrooxEngine.Shader __result) {
+		private static bool Prefix(PBS_TriplanarSpecular __instance, ref FrooxEngine.Shader __result) {
 			Uri URL;
 			if (__instance.Transparent) {
 				URL = new Uri(Shaders.resdb_choco_transparent_specular);
-				Traverse instance_transparent = Traverse.Create(__instance).Field("_transparent");
-				((StaticShader)instance_transparent.GetValue<AssetRef<FrooxEngine.Shader>>().Target).URL.DriveFrom(((StaticShader)instance_transparent.GetValue<AssetRef<FrooxEngine.Shader>>().Target).URL, true);
-				if (((StaticShader)instance_transparent.GetValue<AssetRef<FrooxEngine.Shader>>().Target).URL != URL) {
-					((StaticShader)instance_transparent.GetValue<AssetRef<FrooxEngine.Shader>>().Target).URL.ForceSet(URL);
+				AssetRef<FrooxEngine.Shader> instance_transparent = Traverse.Create(__instance).Field("_transparent").GetValue<AssetRef<FrooxEngine.Shader>>();
+				//__result = Traverse.Create(__instance).Method("EnsureSharedShader", new object[] { instance_regular, URL }).GetValue<IAssetProvider<FrooxEngine.Shader>>().Asset;//TODO before release
+				((StaticShader)instance_transparent.Target).URL.DriveFrom(((StaticShader)instance_transparent.Target).URL, true);
+				if (((StaticShader)instance_transparent.Target).URL != URL) {
+					((StaticShader)instance_transparent.Target).URL.ForceSet(URL);
 				}
-				return;
+				return false;
 			}
 			URL = new Uri(Shaders.resdb_choco_specular);
-			Traverse instance_regular = Traverse.Create(__instance).Field("_regular");
-			((StaticShader)instance_regular.GetValue<AssetRef<FrooxEngine.Shader>>().Target).URL.DriveFrom(((StaticShader)instance_regular.GetValue<AssetRef<FrooxEngine.Shader>>().Target).URL, true);
-			if (((StaticShader)instance_regular.GetValue<AssetRef<FrooxEngine.Shader>>().Target).URL != URL) {
-				((StaticShader)instance_regular.GetValue<AssetRef<FrooxEngine.Shader>>().Target).URL.ForceSet(URL);
+			AssetRef<FrooxEngine.Shader> instance_regular = Traverse.Create(__instance).Field("_regular").GetValue<AssetRef<FrooxEngine.Shader>>();
+			__result = Traverse.Create(__instance).Method("EnsureSharedShader", new object[] { instance_regular, URL }).GetValue<IAssetProvider<FrooxEngine.Shader>>().Asset;
+			((StaticShader)instance_regular.Target).URL.DriveFrom(((StaticShader)instance_regular.Target).URL, true);
+			if (((StaticShader)instance_regular.Target).URL != URL) {
+				((StaticShader)instance_regular.Target).URL.ForceSet(URL);
 			}
+			return false;
 		}
 	}
 
