@@ -103,23 +103,24 @@ public class DoublePrecision : ResoniteMod {
 
 		[HarmonyPatch(typeof(PBS_TriplanarMetallic), "GetShader")]
 		private static bool Prefix(PBS_TriplanarMetallic __instance, ref FrooxEngine.Shader __result) {
+			return true;
 			Uri URL;
 			if (__instance.Transparent) {
 				URL = new Uri(Shaders.resdb_choco_transparent);
 				Traverse instance_transparent = Traverse.Create(__instance).Field("_transparent");
-				//__result = Traverse.Create(__instance).Method("EnsureSharedShader", new object[] { instance_regular, URL }).GetValue<IAssetProvider<FrooxEngine.Shader>>().Asset;//todo before release
+				__result = Traverse.Create(__instance).Method("EnsureSharedShader", new object[] { instance_transparent, URL }).GetValue<IAssetProvider<FrooxEngine.Shader>>().Asset;
 				((StaticShader)instance_transparent.GetValue<AssetRef<FrooxEngine.Shader>>().Target).URL.DriveFrom(((StaticShader)instance_transparent.GetValue<AssetRef<FrooxEngine.Shader>>().Target).URL, true);
 				if (((StaticShader)instance_transparent.GetValue<AssetRef<FrooxEngine.Shader>>().Target).URL != URL) {
-					((StaticShader)instance_transparent.GetValue<AssetRef<FrooxEngine.Shader>>().Target).URL.ForceSet(URL);
+					((StaticShader)instance_transparent.GetValue<AssetRef<FrooxEngine.Shader>>().Target).URL.Value = URL;
 				}
 				return false;
 			}
 			URL = new Uri(Shaders.resdb_choco);
 			Traverse instance_regular = Traverse.Create(__instance).Field("_regular");
-			__result = Traverse.Create(__instance).Method("EnsureSharedShader", new object[] { instance_regular, URL }).GetValue<IAssetProvider<FrooxEngine.Shader>>().Asset;//todo before release
+			__result = Traverse.Create(__instance).Method("EnsureSharedShader", new object[] { instance_regular, URL }).GetValue<IAssetProvider<FrooxEngine.Shader>>().Asset;
 			((StaticShader)instance_regular.GetValue<AssetRef<FrooxEngine.Shader>>().Target).URL.DriveFrom(((StaticShader)instance_regular.GetValue<AssetRef<FrooxEngine.Shader>>().Target).URL, true);
 			if (((StaticShader)instance_regular.GetValue<AssetRef<FrooxEngine.Shader>>().Target).URL != URL) {
-				((StaticShader)instance_regular.GetValue<AssetRef<FrooxEngine.Shader>>().Target).URL.ForceSet(URL);
+				((StaticShader)instance_regular.GetValue<AssetRef<FrooxEngine.Shader>>().Target).URL.Value = URL;
 			}
 			return false;
 		}
@@ -130,14 +131,15 @@ public class DoublePrecision : ResoniteMod {
 
 		[HarmonyPatch(typeof(PBS_TriplanarSpecular), "GetShader")]
 		private static bool Prefix(PBS_TriplanarSpecular __instance, ref FrooxEngine.Shader __result) {
+			return true;
 			Uri URL;
 			if (__instance.Transparent) {
 				URL = new Uri(Shaders.resdb_choco_transparent_specular);
 				AssetRef<FrooxEngine.Shader> instance_transparent = Traverse.Create(__instance).Field("_transparent").GetValue<AssetRef<FrooxEngine.Shader>>();
-				//__result = Traverse.Create(__instance).Method("EnsureSharedShader", new object[] { instance_regular, URL }).GetValue<IAssetProvider<FrooxEngine.Shader>>().Asset;//TODO before release
+				__result = Traverse.Create(__instance).Method("EnsureSharedShader", new object[] { instance_transparent, URL }).GetValue<IAssetProvider<FrooxEngine.Shader>>().Asset;
 				((StaticShader)instance_transparent.Target).URL.DriveFrom(((StaticShader)instance_transparent.Target).URL, true);
 				if (((StaticShader)instance_transparent.Target).URL != URL) {
-					((StaticShader)instance_transparent.Target).URL.ForceSet(URL);
+					((StaticShader)instance_transparent.Target).URL.Value = URL; 
 				}
 				return false;
 			}
@@ -146,7 +148,7 @@ public class DoublePrecision : ResoniteMod {
 			__result = Traverse.Create(__instance).Method("EnsureSharedShader", new object[] { instance_regular, URL }).GetValue<IAssetProvider<FrooxEngine.Shader>>().Asset;
 			((StaticShader)instance_regular.Target).URL.DriveFrom(((StaticShader)instance_regular.Target).URL, true);
 			if (((StaticShader)instance_regular.Target).URL != URL) {
-				((StaticShader)instance_regular.Target).URL.ForceSet(URL);
+				((StaticShader)instance_regular.Target).URL.Value = URL;
 			}
 			return false;
 		}
