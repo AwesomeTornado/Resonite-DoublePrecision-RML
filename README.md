@@ -16,8 +16,5 @@ A screenshot of an inspector at over 10 thousand meters away from the world orig
 1. Place [DoublePrecision.dll](https://github.com/YourGithubUsername/YourModRepoName/releases/latest/download/DoublePrecision.dll) into your `rml_mods` folder. This folder should be at `C:\Program Files (x86)\Steam\steamapps\common\Resonite\rml_mods` for a default install. You can create it if it's missing, or if you launch the game once with ResoniteModLoader installed it will create this folder for you.
 1. Start the game. If you want to verify that the mod is working you can check your Resonite logs.
 
-## Known issues
-This mod is known to break some uses of cameras.
-
 #
 This is the RML Release repository. Check out the MonkeyLoader Development repository [here](https://github.com/AwesomeTornado/Resonite-DoublePrecision).
