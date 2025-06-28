@@ -6,14 +6,11 @@ using HarmonyLib;
 using ResoniteModLoader;
 using UnityEngine;
 using Elements.Core;
-using System.Linq;
-using Elements.Assets;
-using static OfficialAssets;
 
 namespace DoublePrecision;
 //More info on creating mods can be found https://github.com/resonite-modding-group/ResoniteModLoader/wiki/Creating-Mods
 public class DoublePrecision : ResoniteMod {
-	internal const string VERSION_CONSTANT = "1.6.0"; //Changing the version here updates it in all locations needed
+	internal const string VERSION_CONSTANT = "1.6.1"; //Changing the version here updates it in all locations needed
 	public override string Name => "DoublePrecision";
 	public override string Author => "__Choco__";
 	public override string Version => VERSION_CONSTANT;
@@ -30,7 +27,6 @@ public class DoublePrecision : ResoniteMod {
 		public static List<GameObject> unityWorldRoots = new List<GameObject>();
 		public static List<Vector3> FrooxCameraPosition = new List<Vector3>();
 		public static List<PBS_TriplanarMaterial> FrooxMaterials = new List<PBS_TriplanarMaterial>();
-		public static List<MaterialProperty?> MaterialIndexes = new List<MaterialProperty?>();
 
 		public static int FocusedWorld() {
 			int index = -1;
@@ -100,7 +96,7 @@ public class DoublePrecision : ResoniteMod {
 	}
 
 	[HarmonyPatchCategory(nameof(PBS_Tri_Metal_Overhaul))]
-	internal class PBS_Tri_Metal_Overhaul{
+	internal class PBS_Tri_Metal_Overhaul {
 
 		[HarmonyPatch(typeof(PBS_TriplanarMetallic), "GetShader")]
 		private static bool Prefix(PBS_TriplanarMetallic __instance, ref FrooxEngine.Shader __result) {
@@ -117,12 +113,13 @@ public class DoublePrecision : ResoniteMod {
 				instance_shader = Traverse.Create(__instance).Field("_regular").GetValue<AssetRef<FrooxEngine.Shader>>();
 			}
 			__result = Traverse.Create(__instance).Method("EnsureSharedShader", new object[] { instance_shader, officialURL }).GetValue<IAssetProvider<FrooxEngine.Shader>>().Asset;
-			if (((StaticShader)instance_shader.Target).URL.Value != URL && ((StaticShader)instance_shader.Target).URL.IsDriven) {
-				((StaticShader)instance_shader.Target).URL.Value = URL;
+			if (((StaticShader)instance_shader.Target).URL.Value != URL) {
+				World w = __instance.World;
+				var Override = ValueUserOverride.OverrideForUser(((StaticShader)instance_shader.Target).URL, w.LocalUser, URL);
+				Override.Default.Value = officialURL;
+				Override.Persistent = false;
 			}
-			if(!((StaticShader)instance_shader.Target).URL.IsDriven)
-				((StaticShader)instance_shader.Target).URL.DriveFrom(((StaticShader)instance_shader.Target).URL);
-			return false;
+			return false; //never run original function
 		}
 	}
 
@@ -144,18 +141,19 @@ public class DoublePrecision : ResoniteMod {
 				instance_shader = Traverse.Create(__instance).Field("_regular").GetValue<AssetRef<FrooxEngine.Shader>>();
 			}
 			__result = Traverse.Create(__instance).Method("EnsureSharedShader", new object[] { instance_shader, officialURL }).GetValue<IAssetProvider<FrooxEngine.Shader>>().Asset;
-			if (((StaticShader)instance_shader.Target).URL.Value != URL && ((StaticShader)instance_shader.Target).URL.IsDriven) {
-				((StaticShader)instance_shader.Target).URL.Value = URL;
+			if (((StaticShader)instance_shader.Target).URL.Value != URL) {
+				World w = __instance.World;
+				var Override = ValueUserOverride.OverrideForUser(((StaticShader)instance_shader.Target).URL, w.LocalUser, URL);
+				Override.Default.Value = officialURL;
+				Override.Persistent = false;
 			}
-			if(!((StaticShader)instance_shader.Target).URL.IsDriven)
-				((StaticShader)instance_shader.Target).URL.DriveFrom(((StaticShader)instance_shader.Target).URL);
-			return false;
+			return false; //never run original function
 		}
 	}
 
 	[HarmonyPatchCategory(nameof(RenderingRepositioning))]
 	[HarmonyPatch(typeof(RenderConnector), nameof(RenderConnector.RenderImmediate))]
-	internal class RenderingRepositioning{
+	internal class RenderingRepositioning {
 		private static void Prefix(RenderConnector __instance, global::FrooxEngine.RenderSettings renderSettings) {
 			int index = DataShare.FocusedWorld();
 			if (index == -1) return;
