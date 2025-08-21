@@ -3,7 +3,7 @@
 		<RootNamespace>DoublePrecision</RootNamespace>
 		<AssemblyName>DoublePrecision</AssemblyName>
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-		<TargetFramework>net472</TargetFramework>
+		<TargetFramework>net9</TargetFramework>
 		<FileAlignment>512</FileAlignment>
 		<LangVersion>10.0</LangVersion>
 		<Nullable>enable</Nullable>
@@ -26,31 +26,31 @@
 			<Private>False</Private>
 		</Reference>
 		<Reference Include="HarmonyLib">
-			<HintPath>$(ResonitePath)rml_libs\0Harmony.dll</HintPath>
+			<HintPath>$(ResonitePath)\rml_libs\0Harmony.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
 		<Reference Include="FrooxEngine">
-			<HintPath>$(ResonitePath)Resonite_Data\Managed\FrooxEngine.dll</HintPath>
+			<HintPath>$(ResonitePath)\FrooxEngine.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
 		<Reference Include="CoreModule">
-			<HintPath>$(ResonitePath)Resonite_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+			<HintPath>$(ResonitePath)\UnityEngine.CoreModule.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
 		<Reference Include="Elements.Core">
-			<HintPath>$(ResonitePath)Resonite_Data\Managed\Elements.Core.dll</HintPath>
+			<HintPath>$(ResonitePath)\Elements.Core.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
 		<Reference Include="Elements.Assets">
-			<HintPath>$(ResonitePath)Resonite_Data\Managed\Elements.Assets.dll</HintPath>
+			<HintPath>$(ResonitePath)\Elements.Assets.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
 		<Reference Include="Assembly-CSharp">
-			<HintPath>$(ResonitePath)Resonite_Data\Managed\Assembly-CSharp.dll</HintPath>
+			<HintPath>$(ResonitePath)\Assembly-CSharp.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
 		<Reference Include="UnityFrooxEngineRunner">
-			<HintPath>$(ResonitePath)Resonite_Data\Managed\UnityFrooxEngineRunner.dll</HintPath>
+			<HintPath>$(ResonitePath)\UnityFrooxEngineRunner.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
 	</ItemGroup>
