@@ -34,7 +34,7 @@
 			<Private>False</Private>
 		</Reference>
 		<Reference Include="CoreModule">
-			<HintPath>$(ResonitePath)\UnityEngine.CoreModule.dll</HintPath>
+			<HintPath>$(ResonitePath)\Renderer\Renderite.Renderer_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
 		<Reference Include="Elements.Core">
@@ -49,8 +49,8 @@
 			<HintPath>$(ResonitePath)\Assembly-CSharp.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
-		<Reference Include="UnityFrooxEngineRunner">
-			<HintPath>$(ResonitePath)\UnityFrooxEngineRunner.dll</HintPath>
+		<Reference Include="Renderite.Shared">
+			<HintPath>$(ResonitePath)\Renderer\Renderite.Renderer_Data\Managed\Renderite.Shared.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
 	</ItemGroup>

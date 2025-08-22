@@ -1,0 +1,47 @@
+﻿This file serves as a stream of consciouness notes page so that I can keep track of how this mod works
+
+Ideally, this mod is able to find the exact position of the head every frame, and offset the unity root by the opposite of that.
+Previously, this was accomplished by accumulating the movement every frame. This required an array of every singe world
+and was prone to breaking due to world crashes. I want a better way of understanding where the camera *should* be and where the camera *is*
+
+IMPORTANT
+RenderSpace in Renderite.Unity 
+VERY important file, has information that can influence camera positioning.
+Vector3 RootPosition
+
+Renderite.Unity also has a HeadOutput class
+This could be used to mimic the current functionality, but I wonder if there is a better way to do this.
+
+data.rootTransform.position used to set unity root position, unused for anything else
+Can totally hook into this, HandleUpdate function
+
+RenderSpaceUpdate is a really cool class!
+It contains all the updates for all the meshes,textures, lights, cameras, you name it. These are all stored in SharedMemoryBufferDescriptors
+
+SharedMemoryBufferDescriptors seem to be ranges of memory that contain generic classes for transferring between Unity and FrooxEngine
+Basically really fancy arrays (I think)
+Seems like SharedMemoryAccessor is used for reading and writing these.
+
+Initial height is set to 1.75 (public constant)
+This is used to set the initial _viewpos
+
+
+As I am building the mod, I want to focus on the following features, in no particular order.
+1: Screen camera always located at unity root
+2: VR Camera always located at unity root
+3: Hot swapping doesn't reset offset
+4: Stateless design (to eliminate offset issues)
+5: TriPlanar Shaders (Make sure to investigate GH issue)
+6: PBS_Displace Shaders
+7: Render manager offsets (cameras/photos)
+8: Overlay offsets
+
+DESKTOP MODE VIEW IS ALWAYS OVERRIDDEN!!!!!
+This solves one of my biggest questions!!! 
+Why does the VR camera not match the Screen camera? What is _viewpos?
+_viewpos is the Overridden view position. Screen mode uses this for position
+
+private void UpdateLocalUserOutputPositions(UserRoot root)
+This function has a lot of variables to do with head view position
+This might be an even better way to modify the view position.
+Not sure yet tbh.

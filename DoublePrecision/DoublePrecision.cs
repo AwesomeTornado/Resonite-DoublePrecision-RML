@@ -1,16 +1,16 @@
 using System;
 using System.Collections.Generic;
-using UnityFrooxEngineRunner;
 using FrooxEngine;
 using HarmonyLib;
 using ResoniteModLoader;
-using UnityEngine;
 using Elements.Core;
+using Renderite.Shared;
+using static FrooxEngine.TrackerSettings;
 
 namespace DoublePrecision;
 //More info on creating mods can be found https://github.com/resonite-modding-group/ResoniteModLoader/wiki/Creating-Mods
 public class DoublePrecision : ResoniteMod {
-	internal const string VERSION_CONSTANT = "1.6.1"; //Changing the version here updates it in all locations needed
+	internal const string VERSION_CONSTANT = "2.0.0"; //Changing the version here updates it in all locations needed
 	public override string Name => "DoublePrecision";
 	public override string Author => "__Choco__";
 	public override string Version => VERSION_CONSTANT;
@@ -22,6 +22,52 @@ public class DoublePrecision : ResoniteMod {
 		Msg("DoublePrecision loaded.");
 	}
 
+	[HarmonyPatchCategory(nameof(RenderSpaceUpdate))]
+	[HarmonyPatch(typeof(RenderSpaceUpdate), nameof(RenderSpaceUpdate.Pack))]
+	public class FrameUpdateHandeler {
+		public static bool Prefix(ref MemoryPacker packer, ref RenderSpaceUpdate __instance) {
+			packer.Write<int>(__instance.id);
+			packer.Write<bool>(__instance.isActive);
+			packer.Write<bool>(__instance.isOverlay);
+			packer.Write<bool>(__instance.isPrivate);
+			packer.Write<RenderTransform>(__instance.rootTransform);
+			packer.Write<bool>(__instance.viewPositionIsExternal);
+			packer.Write<bool>(__instance.overrideViewPosition);
+			packer.Write<int>(__instance.skyboxMaterialAssetId);
+			packer.Write<RenderSH2>(__instance.ambientLight);
+			packer.Write<RenderTransform>(__instance.overridenViewTransform);
+			packer.WriteObject<TransformsUpdate>(__instance.transformsUpdate);
+			packer.WriteObject<MeshRenderablesUpdate>(__instance.meshRenderersUpdate);
+			packer.WriteObject<SkinnedMeshRenderablesUpdate>(__instance.skinnedMeshRenderersUpdate);
+			packer.WriteObject<LightRenderablesUpdate>(__instance.lightsUpdate);
+			packer.WriteObject<CameraRenderablesUpdate>(__instance.camerasUpdate);
+			packer.WriteObject<CameraPortalsRenderablesUpdate>(__instance.cameraPortalsUpdate);
+			packer.WriteObject<ReflectionProbeRenderablesUpdate>(__instance.reflectionProbesUpdate);
+			packer.WriteObject<ReflectionProbeSH2Tasks>(__instance.reflectionProbeSH2Taks);
+			packer.WriteObject<LayerUpdate>(__instance.layersUpdate);
+			packer.WriteObject<BillboardRenderBufferUpdate>(__instance.billboardBuffersUpdate);
+			packer.WriteObject<MeshRenderBufferUpdate>(__instance.meshRenderBuffersUpdate);
+			packer.WriteObject<TrailsRendererUpdate>(__instance.trailRenderersUpdate);
+			packer.WriteObject<LightsBufferRendererUpdate>(__instance.lightsBufferRenderersUpdate);
+			packer.WriteObject<RenderTransformOverridesUpdate>(__instance.renderTransformOverridesUpdate);
+			packer.WriteObject<RenderMaterialOverridesUpdate>(__instance.renderMaterialOverridesUpdate);
+			packer.WriteObject<BlitToDisplayRenderablesUpdate>(__instance.blitToDisplaysUpdate);
+			packer.WriteObject<LODGroupRenderablesUpdate>(__instance.lodGroupUpdate);
+			packer.WriteObject<GaussianSplatRenderablesUpdate>(__instance.gaussianSplatRenderersUpdate);
+			packer.WriteObjectList<ReflectionProbeRenderTask>(__instance.reflectionProbeRenderTasks);
+			//__instance.overridenViewTransform.position = new RenderVector3(__instance.rootTransform.position.x, 3, __instance.rootTransform.position.z);
+			__instance.rootTransform.position = new RenderVector3(0,0,0);
+			//string rootPos = __instance.rootTransform.position.ToString(); //thx for the tostring() implementation Froox!
+			//Msg(rootPos);
+			return false;
+		}
+	}
+
+
+
+
+
+	/*
 	public class DataShare {
 		public static List<World> frooxWorlds = new List<World>();
 		public static List<GameObject> unityWorldRoots = new List<GameObject>();
@@ -169,4 +215,5 @@ public class DoublePrecision : ResoniteMod {
 			DataShare.FrooxMaterials.Add(__instance);
 		}
 	}
+	*/
 }
