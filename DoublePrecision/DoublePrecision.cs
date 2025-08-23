@@ -32,7 +32,7 @@ public class DoublePrecision : ResoniteMod {
 	public class FrameUpdateHandeler {
 		public static bool Prefix(ref MemoryPacker packer, ref RenderSpaceUpdate __instance) {
 			ScreenCameraPosition = __instance.overridenViewTransform.position;
-			//__instance.overridenViewTransform.position = RenderVectorZero;
+			__instance.overridenViewTransform.position = RenderVectorZero;
 			__instance.rootTransform.position = RenderVectorZero;
 			packer.Write<int>(__instance.id);
 			packer.Write<bool>(__instance.isActive);
@@ -69,24 +69,65 @@ public class DoublePrecision : ResoniteMod {
 	}
 
 	[HarmonyPatchCategory(nameof(RenderTransformManager))]
+	[HarmonyPatch(typeof(RenderTransformManager), nameof(RenderTransformManager.EstimatedPoseUpdateCount), MethodType.Getter)]
+	public class ResizeTransformBlock {
+		static void Postfix(ref RenderTransformManager __instance, ref int __result) {
+			__result += 5;
+		}
+	}
+
+	[HarmonyPatchCategory(nameof(RenderTransformManager))]
 	[HarmonyPatch(typeof(RenderTransformManager), "FillUpdate")]
 	public class TransformMemoryBuilder {
 		private static void Postfix(Span<int> removals, Span<TransformParentUpdate> parentUpdates, Span<TransformPoseUpdate> poseUpdates, ref RenderTransformManager __instance) {
-			Engine engine = Engine.Current;
-			World? focusedWorld = engine.WorldManager.FocusedWorld;
-			bool? isAllocated = focusedWorld?.RootSlot.IsRenderTransformAllocated;
-			if (focusedWorld == null)
-				return;
+			Slot rootslot = __instance.World.RootSlot;
+			Traverse rootSlotTraverse = Traverse.Create(rootslot);
+			int renderIndex = rootSlotTraverse.Field("RenderTransformIndex").GetValue<int>();
+			bool alreadyExists = false;
 			for (int i = 0; i < poseUpdates.Length; i++) {
-				if (poseUpdates[0].transformId == 0) {
-					RenderVector3 pos = poseUpdates[0].pose.position;
-					pos = sub(pos, ScreenCameraPosition);
-					poseUpdates[0].pose.position = pos;
+				if (poseUpdates[i].transformId == renderIndex) {
+					alreadyExists = true;
+					//RenderVector3 pos = poseUpdates[i].pose.position;
+					//pos = sub(pos, ScreenCameraPosition);
+					//poseUpdates[i].pose.position = pos;
+					//Msg($"{pos}, {renderIndex}");
 				}
 			}
+			
+			if (!alreadyExists) {
+				if (rootslot.IsRenderTransformAllocated) { 
+					RenderVector3 pos = rootslot.LocalPosition;
+					pos = sub(pos, ScreenCameraPosition);
+					TransformPoseUpdate rootPoseUpdate = new TransformPoseUpdate();
+					rootPoseUpdate.transformId = renderIndex;
+					rootPoseUpdate.pose.position = pos;
+					rootPoseUpdate.pose.rotation = rootslot.LocalRotation;
+					rootPoseUpdate.pose.scale = rootslot.LocalScale;
+					poseUpdates[poseUpdates.Length - 1] = poseUpdates[0];
+					poseUpdates[0] = rootPoseUpdate;
+					//poseUpdates[0].pose.position = pos;
+					Msg($"{pos}, {renderIndex}");
+				}
+
+			}
+
+			//rootSlotTraverse.Method("RegisterPoseUpdate", new object[] { focusedWorld.RootSlot }).GetValue();
+			//Msg($"Hooke works!, RootAllocated {isAllocated}, with index {renderIndex}");
+		}
+
+		private static void Prefix(Span<int> removals, Span<TransformParentUpdate> parentUpdates, Span<TransformPoseUpdate> poseUpdates, ref RenderTransformManager __instance) {
+			Engine engine = Engine.Current;
+			World? focusedWorld = engine.WorldManager.FocusedWorld;
+			if (focusedWorld == null)
+				return;
 			Traverse rootSlotTraverse = Traverse.Create(focusedWorld.RootSlot);
-			int renderIndex = rootSlotTraverse.Field("RenderTransformIndex").GetValue<int>();
-			Msg($"Hooke works!, RootAllocated {isAllocated}, with index {renderIndex}");
+			Userspace u = new Userspace();
+			//rootSlotTraverse.Method("RegisterPoseUpdate", new object[] { focusedWorld.RootSlot }).GetValue();
+			u.RunSynchronously(() => {
+
+			});
+
+			//Msg($"Hooke works!, RootAllocated {isAllocated}, with index {renderIndex}");
 		}
 	}
 

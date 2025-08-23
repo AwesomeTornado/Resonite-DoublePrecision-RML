@@ -47,3 +47,11 @@ This might be an even better way to modify the view position.
 Not sure yet tbh.
 
 HeadsetState.position could allow for stateless positioning
+
+[NullableContext(0)]
+		private unsafe void FillUpdate(Span<int> removals, Span<TransformParentUpdate> parentUpdates, Span<TransformPoseUpdate> poseUpdates)
+		Seems to have code that I can mimic/hook in order to reposition the world root
+
+Seems like FillUpdate is the best place to do transforms. I can build my own transforms to be applied to various slots, and everything "just works."
+I am having a weird problem currently, where the camera lags and teleports behind the player. It is probably a result of the camera position being one 
+frame ahead of the root position, but its still weird.
