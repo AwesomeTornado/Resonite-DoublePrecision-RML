@@ -6,6 +6,7 @@ using ResoniteModLoader;
 using Elements.Core;
 using Renderite.Shared;
 using static FrooxEngine.TrackerSettings;
+using UnityEngine;
 
 namespace DoublePrecision;
 //More info on creating mods can be found https://github.com/resonite-modding-group/ResoniteModLoader/wiki/Creating-Mods
@@ -55,11 +56,31 @@ public class DoublePrecision : ResoniteMod {
 			packer.WriteObject<LODGroupRenderablesUpdate>(__instance.lodGroupUpdate);
 			packer.WriteObject<GaussianSplatRenderablesUpdate>(__instance.gaussianSplatRenderersUpdate);
 			packer.WriteObjectList<ReflectionProbeRenderTask>(__instance.reflectionProbeRenderTasks);
-			//__instance.overridenViewTransform.position = new RenderVector3(__instance.rootTransform.position.x, 3, __instance.rootTransform.position.z);
-			__instance.rootTransform.position = new RenderVector3(0,0,0);
-			//string rootPos = __instance.rootTransform.position.ToString(); //thx for the tostring() implementation Froox!
-			//Msg(rootPos);
+
 			return false;
+		}
+	}
+
+	[HarmonyPatchCategory(nameof(RenderTransformManager))]
+	[HarmonyPatch(typeof(RenderTransformManager), "GenerateUpdate")]
+	public class TransformMemoryBuilder {
+		private static void Postfix(ref TransformsUpdate __result, ref RenderTransformManager __instance) {
+			Engine engine = Engine.Current;
+			World? focusedWorld = engine.WorldManager.FocusedWorld;
+			bool? isAllocated = focusedWorld?.RootSlot.IsRenderTransformAllocated;
+			if (focusedWorld == null)
+				return;
+			Traverse _renderableSlotPoseUpdates = Traverse.Create(__instance).Field("_renderableSlotPoseUpdates");
+			List<Slot> poseUpdates = _renderableSlotPoseUpdates.GetValue<List<Slot>>();
+			bool rootWillBeUpdated = poseUpdates.Contains(focusedWorld.RootSlot);
+			if (!rootWillBeUpdated) {
+				poseUpdates.Add(focusedWorld.RootSlot);
+				_renderableSlotPoseUpdates.SetValue(poseUpdates);
+			}
+			rootWillBeUpdated = poseUpdates.Contains(focusedWorld.RootSlot);
+			Traverse rootSlotTraverse = Traverse.Create(focusedWorld.RootSlot);
+			int renderIndex = rootSlotTraverse.Field("RenderTransformIndex").GetValue<int>();
+			Msg($"Hooke works!, RootAllocated {isAllocated}, RootWillBeUpdated {rootWillBeUpdated}, with index {renderIndex}");
 		}
 	}
 

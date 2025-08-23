@@ -45,3 +45,5 @@ private void UpdateLocalUserOutputPositions(UserRoot root)
 This function has a lot of variables to do with head view position
 This might be an even better way to modify the view position.
 Not sure yet tbh.
+
+HeadsetState.position could allow for stateless positioning
