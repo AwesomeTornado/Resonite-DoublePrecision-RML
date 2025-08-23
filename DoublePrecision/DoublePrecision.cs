@@ -7,6 +7,7 @@ using Elements.Core;
 using Renderite.Shared;
 using static FrooxEngine.TrackerSettings;
 using UnityEngine;
+using System.Runtime.InteropServices;
 
 namespace DoublePrecision;
 //More info on creating mods can be found https://github.com/resonite-modding-group/ResoniteModLoader/wiki/Creating-Mods
@@ -23,10 +24,16 @@ public class DoublePrecision : ResoniteMod {
 		Msg("DoublePrecision loaded.");
 	}
 
+	static RenderVector3 ScreenCameraPosition = new RenderVector3();
+	static readonly RenderVector3 RenderVectorZero = new RenderVector3();
+
 	[HarmonyPatchCategory(nameof(RenderSpaceUpdate))]
 	[HarmonyPatch(typeof(RenderSpaceUpdate), nameof(RenderSpaceUpdate.Pack))]
 	public class FrameUpdateHandeler {
 		public static bool Prefix(ref MemoryPacker packer, ref RenderSpaceUpdate __instance) {
+			ScreenCameraPosition = __instance.overridenViewTransform.position;
+			//__instance.overridenViewTransform.position = RenderVectorZero;
+			__instance.rootTransform.position = RenderVectorZero;
 			packer.Write<int>(__instance.id);
 			packer.Write<bool>(__instance.isActive);
 			packer.Write<bool>(__instance.isOverlay);
@@ -75,14 +82,26 @@ public class DoublePrecision : ResoniteMod {
 			//	pos = new RenderVector3(1+pos.x, 1+pos.y, 1+pos.z);
 			//	poseUpdates[i].pose.position = pos;
 			//}
-			RenderVector3 pos = poseUpdates[0].pose.position;
-			pos = new RenderVector3(1000 + pos.x, 1000 + pos.y, 1000 + pos.z);
-			poseUpdates[0].pose.position = pos;
+			if (poseUpdates[0].transformId == 0) {
+				RenderVector3 pos = poseUpdates[0].pose.position;
+				pos = sub(pos, ScreenCameraPosition);
+				poseUpdates[0].pose.position = pos;
+			}
 			Traverse rootSlotTraverse = Traverse.Create(focusedWorld.RootSlot);
 			int renderIndex = rootSlotTraverse.Field("RenderTransformIndex").GetValue<int>();
 			Msg($"Hooke works!, RootAllocated {isAllocated}, with index {renderIndex}");
 		}
 	}
+
+	public static RenderVector3 add(RenderVector3 a, RenderVector3 b) {
+		return new RenderVector3(a.x + b.x, a.y + b.y, a.z + b.z);
+		//could make this slightly more efficient by using ref and directly writing to a
+	}
+	public static RenderVector3 sub(RenderVector3 a, RenderVector3 b) {
+		return new RenderVector3(a.x - b.x, a.y - b.y, a.z - b.z);
+		//could make this slightly more efficient by using ref and directly writing to a
+	}
+
 
 
 
