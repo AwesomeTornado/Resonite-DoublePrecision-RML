@@ -77,15 +77,12 @@ public class DoublePrecision : ResoniteMod {
 			bool? isAllocated = focusedWorld?.RootSlot.IsRenderTransformAllocated;
 			if (focusedWorld == null)
 				return;
-			//for (int i = 0; i < poseUpdates.Length; i++) {
-			//	RenderVector3 pos = poseUpdates[i].pose.position;
-			//	pos = new RenderVector3(1+pos.x, 1+pos.y, 1+pos.z);
-			//	poseUpdates[i].pose.position = pos;
-			//}
-			if (poseUpdates[0].transformId == 0) {
-				RenderVector3 pos = poseUpdates[0].pose.position;
-				pos = sub(pos, ScreenCameraPosition);
-				poseUpdates[0].pose.position = pos;
+			for (int i = 0; i < poseUpdates.Length; i++) {
+				if (poseUpdates[0].transformId == 0) {
+					RenderVector3 pos = poseUpdates[0].pose.position;
+					pos = sub(pos, ScreenCameraPosition);
+					poseUpdates[0].pose.position = pos;
+				}
 			}
 			Traverse rootSlotTraverse = Traverse.Create(focusedWorld.RootSlot);
 			int renderIndex = rootSlotTraverse.Field("RenderTransformIndex").GetValue<int>();
