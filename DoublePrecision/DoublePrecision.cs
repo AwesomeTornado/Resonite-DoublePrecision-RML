@@ -62,25 +62,25 @@ public class DoublePrecision : ResoniteMod {
 	}
 
 	[HarmonyPatchCategory(nameof(RenderTransformManager))]
-	[HarmonyPatch(typeof(RenderTransformManager), "GenerateUpdate")]
+	[HarmonyPatch(typeof(RenderTransformManager), "FillUpdate")]
 	public class TransformMemoryBuilder {
-		private static void Postfix(ref TransformsUpdate __result, ref RenderTransformManager __instance) {
+		private static void Postfix(Span<int> removals, Span<TransformParentUpdate> parentUpdates, Span<TransformPoseUpdate> poseUpdates, ref RenderTransformManager __instance) {
 			Engine engine = Engine.Current;
 			World? focusedWorld = engine.WorldManager.FocusedWorld;
 			bool? isAllocated = focusedWorld?.RootSlot.IsRenderTransformAllocated;
 			if (focusedWorld == null)
 				return;
-			Traverse _renderableSlotPoseUpdates = Traverse.Create(__instance).Field("_renderableSlotPoseUpdates");
-			List<Slot> poseUpdates = _renderableSlotPoseUpdates.GetValue<List<Slot>>();
-			bool rootWillBeUpdated = poseUpdates.Contains(focusedWorld.RootSlot);
-			if (!rootWillBeUpdated) {
-				poseUpdates.Add(focusedWorld.RootSlot);
-				_renderableSlotPoseUpdates.SetValue(poseUpdates);
-			}
-			rootWillBeUpdated = poseUpdates.Contains(focusedWorld.RootSlot);
+			//for (int i = 0; i < poseUpdates.Length; i++) {
+			//	RenderVector3 pos = poseUpdates[i].pose.position;
+			//	pos = new RenderVector3(1+pos.x, 1+pos.y, 1+pos.z);
+			//	poseUpdates[i].pose.position = pos;
+			//}
+			RenderVector3 pos = poseUpdates[0].pose.position;
+			pos = new RenderVector3(1000 + pos.x, 1000 + pos.y, 1000 + pos.z);
+			poseUpdates[0].pose.position = pos;
 			Traverse rootSlotTraverse = Traverse.Create(focusedWorld.RootSlot);
 			int renderIndex = rootSlotTraverse.Field("RenderTransformIndex").GetValue<int>();
-			Msg($"Hooke works!, RootAllocated {isAllocated}, RootWillBeUpdated {rootWillBeUpdated}, with index {renderIndex}");
+			Msg($"Hooke works!, RootAllocated {isAllocated}, with index {renderIndex}");
 		}
 	}
 
