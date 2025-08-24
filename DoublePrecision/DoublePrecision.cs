@@ -6,7 +6,6 @@ using ResoniteModLoader;
 using Elements.Core;
 using Renderite.Shared;
 using static FrooxEngine.TrackerSettings;
-using UnityEngine;
 using System.Runtime.InteropServices;
 
 namespace DoublePrecision;
@@ -73,6 +72,7 @@ public class DoublePrecision : ResoniteMod {
 	public class ResizeTransformBlock {
 		static void Postfix(ref RenderTransformManager __instance, ref int __result) {
 			__result += 5;
+			//todo, update this to +1
 		}
 	}
 
@@ -96,10 +96,12 @@ public class DoublePrecision : ResoniteMod {
 			
 			if (!alreadyExists) {
 				if (rootslot.IsRenderTransformAllocated) { 
-					RenderVector3 pos = rootslot.LocalPosition;
-					pos = sub(pos, ScreenCameraPosition);
+					RenderVector3 pos = __instance.World.LocalUserViewTransform.position;
+					//NegatePosition(ref pos);
+					pos = sub(float3.Zero, pos);
 					TransformPoseUpdate rootPoseUpdate = new TransformPoseUpdate();
 					rootPoseUpdate.transformId = renderIndex;
+					//rootPoseUpdate.pose = pos;
 					rootPoseUpdate.pose.position = pos;
 					rootPoseUpdate.pose.rotation = rootslot.LocalRotation;
 					rootPoseUpdate.pose.scale = rootslot.LocalScale;
@@ -138,6 +140,11 @@ public class DoublePrecision : ResoniteMod {
 	public static RenderVector3 sub(RenderVector3 a, RenderVector3 b) {
 		return new RenderVector3(a.x - b.x, a.y - b.y, a.z - b.z);
 		//could make this slightly more efficient by using ref and directly writing to a
+	}
+	public static void NegatePosition(ref RenderTransform t) {
+		t.position.x *= -1;
+		t.position.y *= -1;
+		t.position.z *= -1;
 	}
 
 
