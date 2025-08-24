@@ -7,6 +7,7 @@ using Elements.Core;
 using Renderite.Shared;
 using static FrooxEngine.TrackerSettings;
 using System.Runtime.InteropServices;
+using UnityEngine;
 
 namespace DoublePrecision;
 //More info on creating mods can be found https://github.com/resonite-modding-group/ResoniteModLoader/wiki/Creating-Mods
@@ -23,16 +24,13 @@ public class DoublePrecision : ResoniteMod {
 		Msg("DoublePrecision loaded.");
 	}
 
-	static RenderVector3 ScreenCameraPosition = new RenderVector3();
-	static readonly RenderVector3 RenderVectorZero = new RenderVector3();
 
 	[HarmonyPatchCategory(nameof(RenderSpaceUpdate))]
 	[HarmonyPatch(typeof(RenderSpaceUpdate), nameof(RenderSpaceUpdate.Pack))]
 	public class FrameUpdateHandeler {
 		public static bool Prefix(ref MemoryPacker packer, ref RenderSpaceUpdate __instance) {
-			ScreenCameraPosition = __instance.overridenViewTransform.position;
-			__instance.overridenViewTransform.position = RenderVectorZero;
-			__instance.rootTransform.position = RenderVectorZero;
+			__instance.overridenViewTransform.position = float3.Zero;
+			__instance.rootTransform.position = float3.Zero;
 			packer.Write<int>(__instance.id);
 			packer.Write<bool>(__instance.isActive);
 			packer.Write<bool>(__instance.isOverlay);
@@ -71,83 +69,64 @@ public class DoublePrecision : ResoniteMod {
 	[HarmonyPatch(typeof(RenderTransformManager), nameof(RenderTransformManager.EstimatedPoseUpdateCount), MethodType.Getter)]
 	public class ResizeTransformBlock {
 		static void Postfix(ref RenderTransformManager __instance, ref int __result) {
-			__result += 5;
-			//todo, update this to +1
+			__result += 1;
 		}
 	}
 
 	[HarmonyPatchCategory(nameof(RenderTransformManager))]
 	[HarmonyPatch(typeof(RenderTransformManager), "FillUpdate")]
 	public class TransformMemoryBuilder {
-		private static void Postfix(Span<int> removals, Span<TransformParentUpdate> parentUpdates, Span<TransformPoseUpdate> poseUpdates, ref RenderTransformManager __instance) {
-			Slot rootslot = __instance.World.RootSlot;
-			Traverse rootSlotTraverse = Traverse.Create(rootslot);
-			int renderIndex = rootSlotTraverse.Field("RenderTransformIndex").GetValue<int>();
-			bool alreadyExists = false;
-			for (int i = 0; i < poseUpdates.Length; i++) {
-				if (poseUpdates[i].transformId == renderIndex) {
-					alreadyExists = true;
-					//RenderVector3 pos = poseUpdates[i].pose.position;
-					//pos = sub(pos, ScreenCameraPosition);
-					//poseUpdates[i].pose.position = pos;
-					//Msg($"{pos}, {renderIndex}");
-				}
-			}
-			
-			if (!alreadyExists) {
-				if (rootslot.IsRenderTransformAllocated) { 
-					RenderVector3 pos = __instance.World.LocalUserViewTransform.position;
-					//NegatePosition(ref pos);
-					pos = sub(float3.Zero, pos);
-					TransformPoseUpdate rootPoseUpdate = new TransformPoseUpdate();
-					rootPoseUpdate.transformId = renderIndex;
-					//rootPoseUpdate.pose = pos;
-					rootPoseUpdate.pose.position = pos;
-					rootPoseUpdate.pose.rotation = rootslot.LocalRotation;
-					rootPoseUpdate.pose.scale = rootslot.LocalScale;
-					poseUpdates[poseUpdates.Length - 1] = poseUpdates[0];
-					poseUpdates[0] = rootPoseUpdate;
-					//poseUpdates[0].pose.position = pos;
-					Msg($"{pos}, {renderIndex}");
-				}
 
-			}
-
-			//rootSlotTraverse.Method("RegisterPoseUpdate", new object[] { focusedWorld.RootSlot }).GetValue();
-			//Msg($"Hooke works!, RootAllocated {isAllocated}, with index {renderIndex}");
-		}
+		static Slot RootSlot;
+		static int RootTransformIndex;
+		static bool RootTransformDirty;
 
 		private static void Prefix(Span<int> removals, Span<TransformParentUpdate> parentUpdates, Span<TransformPoseUpdate> poseUpdates, ref RenderTransformManager __instance) {
-			Engine engine = Engine.Current;
-			World? focusedWorld = engine.WorldManager.FocusedWorld;
-			if (focusedWorld == null)
+			RootSlot = __instance.World.RootSlot;
+			Traverse rootSlotTraverse = Traverse.Create(RootSlot);
+			RootTransformIndex = rootSlotTraverse.Field("RenderTransformIndex").GetValue<int>();
+			RootTransformDirty = rootSlotTraverse.Field("IsRenderTransformDirty").GetValue<bool>();
+		}
+
+
+		private static void Postfix(Span<int> removals, Span<TransformParentUpdate> parentUpdates, Span<TransformPoseUpdate> poseUpdates, ref RenderTransformManager __instance) {
+			if (!RootTransformDirty) {
+				TransformPoseUpdate rootPoseUpdate = new TransformPoseUpdate();
+
+				rootPoseUpdate.transformId = RootTransformIndex;
+				rootPoseUpdate.pose.position = RootSlot.LocalPosition;
+				rootPoseUpdate.pose.rotation = RootSlot.LocalRotation;
+				rootPoseUpdate.pose.scale = RootSlot.LocalScale;
+
+				sub(ref rootPoseUpdate.pose.position, __instance.World.LocalUserViewTransform.position);
+
+				poseUpdates[poseUpdates.Length - 1] = poseUpdates[0];
+				poseUpdates[0] = rootPoseUpdate;
+
 				return;
-			Traverse rootSlotTraverse = Traverse.Create(focusedWorld.RootSlot);
-			Userspace u = new Userspace();
-			//rootSlotTraverse.Method("RegisterPoseUpdate", new object[] { focusedWorld.RootSlot }).GetValue();
-			u.RunSynchronously(() => {
+			}
 
-			});
+			if (poseUpdates[RootTransformIndex].transformId == RootTransformIndex) {
+				sub(ref poseUpdates[RootTransformIndex].pose.position, __instance.World.LocalUserViewTransform.position);
+				return;
+			}
 
-			//Msg($"Hooke works!, RootAllocated {isAllocated}, with index {renderIndex}");
+			Error("Error while trying to modify Root Transform in DoublePrecision!");
+			Error($"Expected to find RootTransform with index {RootTransformIndex}, found transform with index {poseUpdates[RootTransformIndex].transformId} instead!");
 		}
 	}
 
-	public static RenderVector3 add(RenderVector3 a, RenderVector3 b) {
-		return new RenderVector3(a.x + b.x, a.y + b.y, a.z + b.z);
-		//could make this slightly more efficient by using ref and directly writing to a
+	public static void add(ref RenderVector3 a, RenderVector3 b) {
+		a.x += b.x; a.y += b.y; a.z += b.z;
 	}
-	public static RenderVector3 sub(RenderVector3 a, RenderVector3 b) {
-		return new RenderVector3(a.x - b.x, a.y - b.y, a.z - b.z);
-		//could make this slightly more efficient by using ref and directly writing to a
+	public static void sub(ref RenderVector3 a, RenderVector3 b) {
+		a.x -= b.x; a.y -= b.y; a.z -= b.z;
 	}
-	public static void NegatePosition(ref RenderTransform t) {
-		t.position.x *= -1;
-		t.position.y *= -1;
-		t.position.z *= -1;
+	public static void NegateVector(ref RenderVector3 t) {
+		t.x *= -1;
+		t.y *= -1;
+		t.z *= -1;
 	}
-
-
 
 
 
