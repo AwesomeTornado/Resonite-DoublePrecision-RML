@@ -41,4 +41,7 @@ static class Shaders {
 	public const string resdb_froox_specular = prefix + ext_froox_specular;
 	public const string resdb_froox_transparent = prefix + ext_froox_transparent;
 	public const string resdb_froox_transparent_specular = prefix + ext_froox_transparent_specular;
+
+	public static readonly string[] ChocoShaders = new string[] { resdb_choco, resdb_choco_specular, resdb_choco_transparent, resdb_choco_transparent_specular };
+	public static readonly string[] FrooxShaders = new string[] { resdb_froox, resdb_froox_specular, resdb_froox_transparent, resdb_froox_transparent_specular };
 }

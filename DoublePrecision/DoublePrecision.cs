@@ -7,7 +7,8 @@ using Elements.Core;
 using Renderite.Shared;
 using static FrooxEngine.TrackerSettings;
 using System.Runtime.InteropServices;
-using UnityEngine;
+using SkyFrost.Base;
+using System.Threading.Tasks;
 
 namespace DoublePrecision;
 //More info on creating mods can be found https://github.com/resonite-modding-group/ResoniteModLoader/wiki/Creating-Mods
@@ -29,8 +30,13 @@ public class DoublePrecision : ResoniteMod {
 	[HarmonyPatch(typeof(RenderSpaceUpdate), nameof(RenderSpaceUpdate.Pack))]
 	public class FrameUpdateHandeler {
 		public static bool Prefix(ref MemoryPacker packer, ref RenderSpaceUpdate __instance) {
+			if (__instance.isOverlay) {
+				return true;
+			}
+
+			sub(ref __instance.rootTransform.position, __instance.overridenViewTransform.position);
 			__instance.overridenViewTransform.position = float3.Zero;
-			__instance.rootTransform.position = float3.Zero;
+
 			packer.Write<int>(__instance.id);
 			packer.Write<bool>(__instance.isActive);
 			packer.Write<bool>(__instance.isOverlay);
@@ -70,6 +76,33 @@ public class DoublePrecision : ResoniteMod {
 	public class ResizeTransformBlock {
 		static void Postfix(ref RenderTransformManager __instance, ref int __result) {
 			__result += 1;
+		}
+	}
+
+	//[HarmonyPatchCategory(nameof(WorldInitIntercept))]
+	//[HarmonyPatch(typeof(World), MethodType.Constructor, new Type[] { typeof(WorldManager), typeof(bool), typeof(bool) })]
+	//internal class WorldInitIntercept {
+	//	public static void Postfix(World __instance) {
+	//		Slot shaders = __instance.AssetsSlot.FindChildOrAdd("Shaders", true);
+	//		Userspace u = new Userspace();
+	//		u.RunSynchronously(() => {
+	//			foreach (string url in Shaders.ChocoShaders) {
+	//				Uri Uri = new Uri(url);
+	//				StaticShader NewChocoShader = __instance.GetSharedComponentOrCreate(u.Cloud.Assets.DBSignature(Uri, false), delegate (StaticShader provider) {
+	//					provider.URL.Value = Uri;
+	//				}, 0, true, false, new Func<Slot>(() => { return shaders; }));
+	//				NewChocoShader.Persistent = false;
+	//				NewChocoShader.Asset.AssetId
+	//			}
+	//		});
+	//	}
+	//}
+
+	[HarmonyPatchCategory(nameof(ShaderUpload))]
+	[HarmonyPatch(typeof(ShaderUpload), nameof(ShaderUpload.Pack))]
+	public class SubstituteShaders {
+		static void Postfix(ref ShaderUpload __instance) {
+			Msg("FrooxEngine is uploading " + __instance.file);
 		}
 	}
 
@@ -129,53 +162,27 @@ public class DoublePrecision : ResoniteMod {
 	}
 
 
+	[HarmonyPatch(typeof(MaterialProvider), "EnsureSharedShader")]
+	class AnyShaderAnywherePatch {
+		public static bool Prefix(AssetRef<Shader> assetRef, Uri url, MaterialProvider __instance, ref IAssetProvider<Shader> __result) {
+			if (assetRef.Target == null)
+				assetRef.Target = (IAssetProvider<Shader>)AccessTools.Method(typeof(MaterialProvider), "GetSharedShader").Invoke(__instance, new object[] { url });
+			__result = assetRef.Target;
+			return false;
+		}
+	}
 
+	[HarmonyPatch(typeof(AssetInterface), "IsValidShader")]
+	class AllShadersValidPatch {
+		public static bool Prefix(ref Task<bool> __result) {
+			__result = Task<bool>.Run(() => {
+				return true;
+			});
+			return false;
+		}
+	}
 
 	/*
-	public class DataShare {
-		public static List<World> frooxWorlds = new List<World>();
-		public static List<GameObject> unityWorldRoots = new List<GameObject>();
-		public static List<Vector3> FrooxCameraPosition = new List<Vector3>();
-		public static List<PBS_TriplanarMaterial> FrooxMaterials = new List<PBS_TriplanarMaterial>();
-
-		public static int FocusedWorld() {
-			int index = -1;
-			for (int i = 0; i < DataShare.unityWorldRoots.Count; i++) {
-				if (DataShare.frooxWorlds[i] is null || DataShare.frooxWorlds[i].IsDestroyed || DataShare.frooxWorlds[i].IsDisposed) {
-					DataShare.frooxWorlds.RemoveAt(i);
-					DataShare.unityWorldRoots.RemoveAt(i);
-					DataShare.FrooxCameraPosition.RemoveAt(i);
-					i--;
-				} else if (DataShare.frooxWorlds[i].Focus == World.WorldFocus.Focused) {
-					index = i;
-				}
-			}
-			if (index == -1) {
-				World w = Userspace.UserspaceWorld;
-				var worldsList = w.WorldManager.Worlds;
-				foreach (World world in worldsList) {
-					WorldInitIntercept.Postfix(world);
-				}
-				return -1;
-			}
-			return index;
-		}
-	}
-
-	[HarmonyPatchCategory(nameof(WorldInitIntercept))]
-	[HarmonyPatch(typeof(World), MethodType.Constructor, new Type[] { typeof(WorldManager), typeof(bool), typeof(bool) })]
-	internal class WorldInitIntercept {
-		public static void Postfix(World __instance) {
-			WorldConnector? worldConnector = __instance.Connector as WorldConnector;
-			if (worldConnector is not null) {
-				DataShare.frooxWorlds.Add(__instance);
-				DataShare.unityWorldRoots.Add(worldConnector.WorldRoot);
-				DataShare.FrooxCameraPosition.Add(Vector3.zero);
-			} else {
-				Error("Unable to cast IWorldConnector to WorldConnector.");
-			}
-		}
-	}
 
 	[HarmonyPatchCategory(nameof(Camera_Patches))]
 	[HarmonyPatch(typeof(HeadOutput), nameof(HeadOutput.UpdatePositioning))]

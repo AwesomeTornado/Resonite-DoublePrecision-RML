@@ -33,10 +33,6 @@
 			<HintPath>$(ResonitePath)\FrooxEngine.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
-		<Reference Include="CoreModule">
-			<HintPath>$(ResonitePath)\Renderer\Renderite.Renderer_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
-			<Private>False</Private>
-		</Reference>
 		<Reference Include="Elements.Core">
 			<HintPath>$(ResonitePath)\Elements.Core.dll</HintPath>
 			<Private>False</Private>
@@ -51,6 +47,10 @@
 		</Reference>
 		<Reference Include="Renderite.Shared">
 			<HintPath>$(ResonitePath)\Renderer\Renderite.Renderer_Data\Managed\Renderite.Shared.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="SkyFrost.Base">
+			<HintPath>$(ResonitePath)SkyFrost.Base.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
 	</ItemGroup>
