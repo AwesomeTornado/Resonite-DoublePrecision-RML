@@ -55,3 +55,7 @@ HeadsetState.position could allow for stateless positioning
 Seems like FillUpdate is the best place to do transforms. I can build my own transforms to be applied to various slots, and everything "just works."
 I am having a weird problem currently, where the camera lags and teleports behind the player. It is probably a result of the camera position being one 
 frame ahead of the root position, but its still weird.
+Jittering was caused by the transform occasionally already being in the transform update buffer, as well as being one frame behind
+Rotational jitter was caused by a broken mouse :(
+
+In VR the Dash was behaving weirdly until I realized that I have to exclude Userspace from positioning.

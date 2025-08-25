@@ -173,6 +173,14 @@ public class DoublePrecision : ResoniteMod {
 		t.z *= -1;
 	}
 
+	[HarmonyPatch(typeof(PhotoCaptureManager), "GetCaptureCameraPosition")]
+	class CaptureRepositioner {
+		public static void Postfix(ref float3 pos, ref floatQ rot, ref PhotoCaptureManager __instance) {
+			World world = __instance.World;
+			Slot RootSlot = world.RootSlot;
+			pos += RootSlot.LocalPosition - (float3)world.LocalUserViewTransform.position;
+		}
+	}
 
 	[HarmonyPatch(typeof(MaterialProvider), "EnsureSharedShader")]
 	class AnyShaderAnywherePatch {
@@ -277,17 +285,6 @@ public class DoublePrecision : ResoniteMod {
 				Override.Persistent = false;
 			}
 			return false; //never run original function
-		}
-	}
-
-	[HarmonyPatchCategory(nameof(RenderingRepositioning))]
-	[HarmonyPatch(typeof(RenderConnector), nameof(RenderConnector.RenderImmediate))]
-	internal class RenderingRepositioning {
-		private static void Prefix(RenderConnector __instance, global::FrooxEngine.RenderSettings renderSettings) {
-			int index = DataShare.FocusedWorld();
-			if (index == -1) return;
-			Vector3 xyz = DataShare.unityWorldRoots[index].transform.position;
-			renderSettings.position += new float3(xyz.x, xyz.y, xyz.z);
 		}
 	}
 
