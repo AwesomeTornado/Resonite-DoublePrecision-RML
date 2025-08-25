@@ -111,11 +111,18 @@ public class DoublePrecision : ResoniteMod {
 	public class TransformMemoryBuilder {
 
 		static Slot RootSlot;
+		static bool WasUserspace;
 		static int RootTransformIndex;
 		static bool RootTransformDirty;
 
 		private static void Prefix(Span<int> removals, Span<TransformParentUpdate> parentUpdates, Span<TransformPoseUpdate> poseUpdates, ref RenderTransformManager __instance) {
+			if (__instance.World.IsUserspace()) {
+				WasUserspace = true;
+				return;
+			}
+
 			RootSlot = __instance.World.RootSlot;
+
 			Traverse rootSlotTraverse = Traverse.Create(RootSlot);
 			RootTransformIndex = rootSlotTraverse.Field("RenderTransformIndex").GetValue<int>();
 			RootTransformDirty = rootSlotTraverse.Field("IsRenderTransformDirty").GetValue<bool>();
@@ -123,6 +130,11 @@ public class DoublePrecision : ResoniteMod {
 
 
 		private static void Postfix(Span<int> removals, Span<TransformParentUpdate> parentUpdates, Span<TransformPoseUpdate> poseUpdates, ref RenderTransformManager __instance) {
+			if (WasUserspace) {
+				WasUserspace = false;
+				return;
+			}
+
 			if (!RootTransformDirty) {
 				TransformPoseUpdate rootPoseUpdate = new TransformPoseUpdate();
 
