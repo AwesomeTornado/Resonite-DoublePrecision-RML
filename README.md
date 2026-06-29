@@ -1,3 +1,8 @@
+# Deprecation Warning!
+This repository is unmaintained, and my code may no longer work! Feel free to use any/all code in here as reference material, or to fork this repo, make changes, and re-release it.
+
+I unfortunately no longer have the time to maintain this repository, and although I will still review and accept PR's, it may be better for development to happen on forks of this repo. 
+
 # DoublePrecision
 
 A [ResoniteModLoader](https://github.com/resonite-modding-group/ResoniteModLoader) mod for [Resonite](https://resonite.com/) that fixes graphical floating-point errors.
